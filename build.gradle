@@ -1,53 +1,65 @@
 plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.3.13'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'java' // 자바 프로젝트 플러그인
+    id 'org.springframework.boot' version '3.3.13' // 스프링 부트 플러그인 - 빌드 및 실행 지원
+    id 'io.spring.dependency-management' version '1.1.7' // 스프링 의존성 관리를 위한 플러그인
 }
 
-group = 'com.playdata'
-version = '0.0.1-SNAPSHOT'
+group = 'com.playdata' // 프로젝트 그룹 ID (보통 조직 도메인)
+version = '0.0.1-SNAPSHOT' // 프로젝트 버전
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(17) // 자바 17 버전으로 컴파일 및 실행 도구 설정
     }
 }
 
 configurations {
     compileOnly {
-        extendsFrom annotationProcessor
+        extendsFrom annotationProcessor // annotationProcessor가 compileOnly 구성을 상속받아 lombok 같은 어노테이션 프로세서가 동작하도록 설정
     }
 }
 
 repositories {
-    mavenCentral()
+    mavenCentral() // 메이븐 중앙 저장소를 통해 라이브러리 다운로드
 }
 
 dependencies {
+    // JPA (Spring Data JPA) : 데이터베이스 ORM 처리
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // Validation API : 입력값 검증 기능 지원 (javax.validation)
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // Spring Web : REST API 등 웹 개발용 스프링 MVC 지원
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Spring Batch : 배치 작업(대용량 일괄 처리) 지원
     implementation 'org.springframework.boot:spring-boot-starter-batch'
 
-    // Selenium & WebDriverManager
+    // Selenium : 웹 자동화 테스트, 크롤링용 웹드라이버 API
     implementation 'org.seleniumhq.selenium:selenium-java:4.21.0'
+
+    // WebDriverManager : WebDriver 바이너리 자동 다운로드 및 관리 라이브러리
     implementation 'io.github.bonigarcia:webdrivermanager:5.7.0'
 
-    // Commons Codec
+    // Commons Codec : 다양한 인코딩/디코딩 유틸리티 제공 (예: Base64, Hex)
     implementation 'commons-codec:commons-codec:1.16.0'
 
-    // Lombok
-    compileOnly 'org.projectlombok:lombok:1.18.30'
-    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    // Lombok : 코드 간결화를 위한 어노테이션 기반 자동 코드 생성 도구
+    compileOnly 'org.projectlombok:lombok:1.18.30' // 컴파일 시에만 필요
+    annotationProcessor 'org.projectlombok:lombok:1.18.30' // 어노테이션 처리기 등록
 
+    // 개발용 툴 : 코드 변경 시 자동 재시작 및 개발 편의 기능 제공
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
+    // MySQL JDBC 드라이버 : MySQL DB 연동용 라이브러리 (런타임 시에만 필요)
     runtimeOnly 'com.mysql:mysql-connector-j'
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // 테스트 관련 의존성
+    testImplementation 'org.springframework.boot:spring-boot-starter-test' // 스프링 테스트 및 JUnit, Mockito 포함
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher' // JUnit 5 런처
 }
 
 tasks.named('test') {
-    useJUnitPlatform()
+    useJUnitPlatform() // JUnit 5 플랫폼에서 테스트 수행하도록 설정
 }
