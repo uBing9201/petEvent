@@ -178,7 +178,7 @@ public class NaverPetEventCrawler {
         }
 
         // 중복 체크용 MD5 해시 생성 (핵심 필드 조합)
-        String hash = generateHash(eventTitle, eventUrl, location, eventDate, reservationDate, eventTime, eventMoney);
+        String hash = generateHash(eventTitle, eventUrl, location);
 
         // PetEvent 객체 생성 (Builder 패턴 사용)
         return PetEvent.builder()
