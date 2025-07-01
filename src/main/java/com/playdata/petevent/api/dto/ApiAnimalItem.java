@@ -1,15 +1,17 @@
 package com.playdata.petevent.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * 개별 유기동물 API 응답 항목 DTO
  */
 @Getter
-@Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
+@AllArgsConstructor
+@Builder
 public class ApiAnimalItem {
 
     private String desertionNo;
