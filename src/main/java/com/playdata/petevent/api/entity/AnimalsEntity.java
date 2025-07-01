@@ -17,6 +17,18 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+/**
+ * 유기동물 정보 DB 엔티티.
+ * JPA Entity 어노테이션 기반 매핑.
+ *
+ * 주요 필드:
+ * - desertionNo: 유기번호, 기본키
+ * - processState: 보호 상태 (보호중, 분양중 등)
+ * - sexCd, neuterYn: enum으로 관리 (성별, 중성화 여부)
+ * - createAt, updateAt: 생성/수정일 자동 관리
+ *
+ * updateIfChanged 메서드로 안전하게 필드 업데이트 가능.
+ */
 @Getter
 @ToString
 @Builder
@@ -29,32 +41,31 @@ public class AnimalsEntity {
 
     @Id
     @Column(name = "desertion_no", nullable = false, unique = true)
-    private String desertionNo; // 유기번호 (널불 불가, 유니크)
+    private String desertionNo; // 유기동물 고유번호, PK 역할
 
     @Column(name = "rfid_cd")
-    private String rfidCd; // RFID 식별번호 (내장칩)
+    private String rfidCd; // 내장 칩 RFID 코드 (없을 수 있음)
 
     @Column(name = "happen_dt")
-    private String happenDt; // 발생일 (YYYYMMDD 형식)
+    private String happenDt; // 유기 발생 날짜 (YYYYMMDD 형식)
 
     @Column(name = "happen_place")
-    private String happenPlace; // 발생장소
+    private String happenPlace; // 유기 발생 장소
 
     @Column(name = "up_kind_nm")
-    private String upKindNm; // 축종 이름
+    private String upKindNm; // 축종 이름 (예: 개, 고양이)
 
     @Column(name = "kind_nm")
     private String kindNm; // 품종 이름
 
     @Column(name = "color_cd")
-    private String colorCd; // 털색
+    private String colorCd; // 털색 정보
 
     @Column(name = "age")
-    private String age; // 나이
+    private String age; // 나이 정보
 
-    // 체중은 String으로 받음, ex) "3Kg"
     @Column(name = "weight")
-    private String weight;
+    private String weight; // 체중 (문자열로 저장, 예: "3Kg")
 
     @Column(name = "notice_sdt")
     private String noticeSdt; // 공고 시작일
@@ -69,15 +80,15 @@ public class AnimalsEntity {
     private String popfile2; // 보조 이미지 URL
 
     @Column(name = "process_state")
-    private String processState; // 상태 (보호중, 입양완료 등)
+    private String processState; // 보호 상태 (예: 보호중, 분양중)
 
     @Enumerated(EnumType.STRING)
     @Column(name = "sex_cd", length = 1)
-    private SexCode sexCd; // 성별 코드 (M/F/Q)
+    private SexCode sexCd; // 성별 코드 (M: 수컷, F: 암컷, Q: 미상)
 
     @Enumerated(EnumType.STRING)
     @Column(name = "neuter_yn", length = 1)
-    private NeuterYn neuterYn; // 중성화 여부 (Y/N/U)
+    private NeuterYn neuterYn; // 중성화 여부 (Y: 예, N: 아니오, U: 미상)
 
     @Column(name = "special_mark", columnDefinition = "TEXT")
     private String specialMark; // 특이사항
@@ -102,15 +113,15 @@ public class AnimalsEntity {
 
     @CreatedDate
     @Column(name = "create_at", updatable = false)
-    private LocalDateTime createAt;
+    private LocalDateTime createAt; // 생성 일시 (자동 관리)
 
     @LastModifiedDate
     @Column(name = "update_at")
-    private LocalDateTime updateAt;
+    private LocalDateTime updateAt; // 수정 일시 (자동 관리)
 
     /**
      * 기존 엔티티 필드와 비교해 source 값이 다르고 null이 아닐 때만 업데이트
-     * desertionNo, id 등 식별키 필드는 제외
+     * desertionNo, id 등 식별키 필드는 제외하여 안전한 필드 변경 보장
      */
     public void updateIfChanged(AnimalsEntity source) {
         if (source.getRfidCd() != null && !source.getRfidCd().equals(this.rfidCd)) {
@@ -181,16 +192,17 @@ public class AnimalsEntity {
         }
     }
 
-    // Enum 선언
+    // 성별 코드 enum (M: 수컷, F: 암컷, Q: 미상)
     public enum SexCode {
-        M, // 수컷
-        F, // 암컷
-        Q  // 미상
+        M,
+        F,
+        Q
     }
 
+    // 중성화 여부 enum (Y: 예, N: 아니오, U: 미상)
     public enum NeuterYn {
-        Y, // 예
-        N, // 아니오
-        U  // 미상
+        Y,
+        N,
+        U
     }
 }

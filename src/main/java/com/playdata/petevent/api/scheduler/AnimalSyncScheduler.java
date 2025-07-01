@@ -18,11 +18,15 @@ public class AnimalSyncScheduler {
     private final JobLauncher jobLauncher;
     private final Job syncAnimalJob;
 
-    @Scheduled(cron = "0 0 * * * *") // 매 정시마다 실행 (e.g., 00:00, 01:00, ...)
+    /**
+     * 매 정시(0분)에 자동으로 배치 실행
+     * cron 형식: "초 분 시 일 월 요일"
+     */
+    @Scheduled(cron = "0 0 5-23 * * *") // 매일 5시 ~ 23시 정시에만 실행
     public void runAnimalSyncJob() {
         try {
             JobParameters params = new JobParametersBuilder()
-                    .addLong("timestamp", System.currentTimeMillis()) // 중복 방지
+                    .addLong("timestamp", System.currentTimeMillis())
                     .toJobParameters();
 
             JobExecution jobExecution = jobLauncher.run(syncAnimalJob, params);
