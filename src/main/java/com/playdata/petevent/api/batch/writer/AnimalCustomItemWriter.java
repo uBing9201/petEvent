@@ -2,68 +2,84 @@ package com.playdata.petevent.api.batch.writer;
 
 import com.playdata.petevent.api.entity.AnimalsEntity;
 import com.playdata.petevent.api.repository.AnimalsRepository;
+
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Spring Batch ItemWriter 구현체.
- * DB 저장소에 동물 데이터를 저장/갱신하는 역할.
- *
- * 특징:
- * - API에서 수집한 각 동물의 desertionNo를 Set에 저장(삭제 로직용).
- * - 기존 DB에 데이터가 존재하면 업데이트 조건 검사 후 변경된 부분만 수정 저장.
- * - 신규 데이터는 바로 저장.
- * - @Transactional로 쓰기 작업이 트랜잭션 단위로 묶임.
+ * Spring Batch에서 데이터를 DB에 기록하는 역할을 하는 ItemWriter 구현체.
+
+ * - AnimalApiItemReader로부터 넘어온 AnimalsEntity들을 DB에 저장 또는 업데이트.
+ * - 이미 존재하는 유기번호(desertionNo)의 경우, 변경된 값만 업데이트.
+ * - 처음 보는 유기번호는 신규 데이터로 저장.
+ * - 유기번호를 Set에 저장해서 이후 삭제용 필터링에도 활용 가능.
  */
 @Component
 @RequiredArgsConstructor
 public class AnimalCustomItemWriter implements ItemWriter<AnimalsEntity> {
 
+    // Spring Data JPA를 통한 DB 접근용 Repository
     private final AnimalsRepository animalsRepository;
 
-    // API로부터 읽어온 유기번호를 저장하는 Set (삭제 대상 판별에 사용)
+    // 이번 배치에서 API로 수집한 모든 유기번호를 모아놓는 Set
+    // 이후 "DB에는 있는데, API에는 없는 데이터"를 삭제할 때 사용할 수 있음
     @Getter
     private final Set<String> desertionNoFromApi = new HashSet<>();
 
+    /**
+     * Chunk 단위로 데이터가 넘어오며, 각 동물 정보를 DB에 저장하거나 업데이트한다.
+     * @param items 이번 배치 사이클에서 처리할 AnimalsEntity 리스트
+     */
     @Override
-    @Transactional
+    @Transactional  // 하나의 Chunk 안에서 모든 쓰기 작업이 트랜잭션으로 처리됨
     public void write(Chunk<? extends AnimalsEntity> items) {
         for (AnimalsEntity incoming : items) {
+
+            // 유기번호를 Set에 저장 (삭제 대상 판별용)
             desertionNoFromApi.add(incoming.getDesertionNo());
 
+            // DB에서 같은 유기번호가 이미 존재하는지 확인
             Optional<AnimalsEntity> optional = animalsRepository.findByDesertionNo(incoming.getDesertionNo());
 
+            // 이미 존재하는 경우 → 데이터가 바뀌었는지 확인 후 업데이트
             if (optional.isPresent()) {
                 AnimalsEntity existing = optional.get();
 
-                // 데이터가 변경되었을 경우에만 업데이트 수행
+                // 비교해서 기존 데이터와 다른 경우만 업데이트
                 if (isChanged(existing, incoming)) {
-                    existing.updateIfChanged(incoming);
-                    animalsRepository.save(existing);
+                    existing.updateIfChanged(incoming);  // 변경된 필드만 업데이트
+                    animalsRepository.save(existing);    // DB 저장
                 }
 
             } else {
-                // 신규 데이터 저장
+                // DB에 존재하지 않는 유기번호 → 신규 데이터로 저장
                 animalsRepository.save(incoming);
             }
         }
     }
 
     /**
-     * 저장된 DB 데이터와 API 데이터 간 비교 후 변경점 존재 여부 반환
-     * 주요 변경 가능 필드로 processState, weight, careTel 포함 (필요시 확장 가능)
+     * 기존 DB의 동물 정보와 새로 들어온 정보 간에 변경 여부를 판단하는 메서드.
+     * (비교 대상은 중요 필드만 선택적으로 지정)
+     *
+     * @param db 기존 DB에 저장된 AnimalsEntity
+     * @param incoming 새로 들어온 AnimalsEntity
+     * @return 변경된 필드가 하나라도 있으면 true
      */
     private boolean isChanged(AnimalsEntity db, AnimalsEntity incoming) {
         return !Objects.equals(db.getProcessState(), incoming.getProcessState()) ||
                 !Objects.equals(db.getWeight(), incoming.getWeight()) ||
                 !Objects.equals(db.getCareTel(), incoming.getCareTel());
+        // 필요 시 비교 항목을 추가해 확장 가능
     }
 }
