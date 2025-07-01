@@ -54,7 +54,7 @@ public class AnimalSyncJobConfig {
     /**
      * Step 정의 - 'apiToDbStep'
      * - 기능: API에서 데이터를 읽고, 가공하고, DB에 저장
-     * - 처리 단위(Chunk size): 500개씩 트랜잭션으로 묶어 처리
+     * - 처리 단위(Chunk size): 300개씩 트랜잭션으로 묶어 처리
      */
     @Bean
     public Step apiToDbStep() {

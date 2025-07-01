@@ -56,14 +56,10 @@ public class AnimalStepListener implements StepExecutionListener {
         // 전체 DB 데이터를 순회하면서 삭제 조건에 해당하는지 검사
         for (AnimalsEntity entity : allInDb) {
 
-            // 조건 1: API 결과에 포함되지 않은 유기번호
+            // API 결과에 포함되지 않은 유기번호
             boolean notInApi = !desertionNoFromApi.contains(entity.getDesertionNo());
 
-            // 조건 2: 해당 동물의 상태가 "보호중"이 아님
-            boolean notProtecting = !"보호중".equals(entity.getProcessState());
-
-            // 두 조건을 모두 만족하면 삭제
-            if (notInApi && notProtecting) {
+            if (notInApi) {
                 animalsRepository.delete(entity);
             }
         }
