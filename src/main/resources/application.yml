@@ -14,10 +14,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    open-in-view: false
     properties:
       hibernate:
         format_sql: true
+        show_sql: true
 
   servlet:
     multipart:
@@ -26,12 +27,12 @@ spring:
 
   batch:
     job:
-      enabled: false  # 애플리케이션 시작 시 배치 자동 실행 방지
+      enabled: false # 애플리케이션 시작 시 배치 자동 실행 방지 (스케줄/수동 트리거용)
     jdbc:
-      initialize-schema: always  # 배치 관련 테이블 자동 생성
+      initialize-schema: always # 개발용, 운영 시 never 권장
 
 logging:
   level:
-    org.hibernate.SQL: debug
+    org.hibernate.SQL: INFO # 또는 TRACE
     org.springframework.batch: INFO
     com.playdata.petevent: DEBUG
